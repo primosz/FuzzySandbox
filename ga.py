@@ -85,8 +85,8 @@ def genetic_algorithm(fitness_func, genotype_size, generation_size=30, generatio
                   np.zeros(generation_size) - 1.0]
     next_gen = np.zeros((generation_size, genotype_size))
 
-    for e in range(generations):
-        for c in range(0, generation_size, 2):
+    for generation in range(generations):
+        for pairs in range(0, generation_size, 2):
 
             parent1 = tournament_pair(population, fitness_func)
             parent2 = tournament_pair(population, fitness_func)
@@ -96,17 +96,17 @@ def genetic_algorithm(fitness_func, genotype_size, generation_size=30, generatio
 
             if np.random.uniform() < crossover_rate:
                 offspring1, offspring2 = _crossover(parent1, parent2)
-                next_gen[c, :] = offspring1
-                next_gen[c + 1, :] = offspring2
+                next_gen[pairs, :] = offspring1
+                next_gen[pairs + 1, :] = offspring2
             else:
-                next_gen[c, :] = parent1
-                next_gen[c + 1, :] = parent2
+                next_gen[pairs, :] = parent1
+                next_gen[pairs + 1, :] = parent2
 
             if np.random.uniform() < mutation_rate:
-                next_gen[c, :] = mutation(next_gen[c, :])
+                next_gen[pairs, :] = mutation(next_gen[pairs, :])
 
             if np.random.uniform() < mutation_rate:
-                next_gen[c + 1, :] = mutation(next_gen[c + 1, :])
+                next_gen[pairs + 1, :] = mutation(next_gen[pairs + 1, :])
 
         best_so_far, best_fitness = get_best(population, fitness_func, best_so_far, best_fitness)
 
@@ -116,12 +116,12 @@ def genetic_algorithm(fitness_func, genotype_size, generation_size=30, generatio
 
         if debug:
             print(best_so_far)
-            print('Generation {2}, best fitness = {:.10f}'.format(e, best_fitness))
+            print('Generation {:2d}, best fitness = {:.10f}'.format(generation, best_fitness))
 
             domain = linspace(0.0, 1., 100)
             Short = IT2FS_Gaussian_UncertMean(domain, [best_so_far[0], best_so_far[1], best_so_far[2], 1.])
             Medium = IT2FS_Gaussian_UncertMean(domain, [best_so_far[3], best_so_far[4], best_so_far[5], 1.])
             Long = IT2FS_Gaussian_UncertMean(domain, [best_so_far[6], best_so_far[7], best_so_far[8], 1.])
-            IT2FS_plot(Short, Medium, Long, title=e, legends=["Short", "Medium", "Long"])
+            IT2FS_plot(Short, Medium, Long, title=generation, legends=["Short", "Medium", "Long"])
 
     return best_so_far, best_fitness
