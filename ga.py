@@ -42,13 +42,13 @@ def tournament_pair(population, fitness_func):
 
 def generate_individual(size):
     individuals = np.zeros(size)
-    individuals[0] = np.random.uniform(low=0.0, high=0.5)
+    individuals[0] = np.random.uniform(low=0.0, high=1.)
     individuals[1] = np.random.uniform(low=0.0, high=0.5)
     individuals[2] = np.random.uniform(low=0.0, high=0.25)
-    individuals[3] = np.random.uniform(low=0.25, high=0.75)
+    individuals[3] = np.random.uniform(low=0.0, high=1.)
     individuals[4] = np.random.uniform(low=0.0, high=0.5)
     individuals[5] = np.random.uniform(low=0.0, high=0.25)
-    individuals[6] = np.random.uniform(low=0.5, high=1.)
+    individuals[6] = np.random.uniform(low=0.0, high=1.)
     individuals[7] = np.random.uniform(low=0.0, high=0.5)
     individuals[8] = np.random.uniform(low=0.0, high=0.25)
 

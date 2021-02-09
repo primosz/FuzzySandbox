@@ -196,14 +196,14 @@ def main():
     iris = datasets.load_iris()
     X = normalize_dataset(iris.data)
     y = iris.target
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
     print("START")
     myIT2FLS = TSK(product_t_norm, max_s_norm)
     # fuzzy_sets = apply_fuzzy_sets([0.15, 0.15, 0.1, 0.5, 0.15, 0.1, 0.85, 0.15, 0.1])
     # myIT2FLS = apply_rules_and_variables(myIT2FLS, fuzzy_sets[0], fuzzy_sets[1], fuzzy_sets[2])
     ff = lambda x: evaluate_solution(myIT2FLS, x, X_train, y_train)
-    best, fbest = genetic_algorithm(fitness_func=ff, genotype_size=9, generation_size=20, generations=10, debug=True)
+    best, fbest = genetic_algorithm(fitness_func=ff, genotype_size=9, generation_size=30, generations=20, debug=True)
 
     fs = apply_fuzzy_sets(best)
     tsk = apply_rules_and_variables(myIT2FLS, fs[0], fs[1], fs[2])
