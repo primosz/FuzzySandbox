@@ -2,10 +2,9 @@ import numpy as np
 from ga import genetic_algorithm
 from pyit2fls import TSK, IT2FS_Gaussian_UncertStd, IT2FS_plot, \
     product_t_norm, max_s_norm, IT2FS_Gaussian_UncertMean
-
+from sklearn.model_selection import train_test_split
 from numpy import linspace
 from sklearn import datasets
-from tqdm import tqdm
 
 
 def normalize_dataset(dataset):
@@ -19,7 +18,7 @@ def apply_fuzzy_sets(ind):
     Short = IT2FS_Gaussian_UncertMean(domain, [ind[0], ind[1], ind[2], 1.])
     Medium = IT2FS_Gaussian_UncertMean(domain, [ind[3], ind[4], ind[5], 1.])
     Long = IT2FS_Gaussian_UncertMean(domain, [ind[6], ind[7], ind[8], 1.])
-    #IT2FS_plot(Short, Medium, Long, title="Sets",               legends=["Short", "Medium", "Long"])
+    # IT2FS_plot(Short, Medium, Long, title="Sets",               legends=["Short", "Medium", "Long"])
     return [Short, Medium, Long]
 
 
@@ -178,28 +177,50 @@ def evaluate_solution(tsk, individual, dataset, actuals):
         result = tsk.evaluate({"x1": dataset[x][0], "x2": dataset[x][1], "x3": dataset[x][2], "x4": dataset[x][3]})[
             'y1']
         error = abs(result - actuals[x])
-     #   print(error)
+        #   print(error)
         avg_error += error
-    print("AVG_ERROR: ", avg_error/dataset.shape[0])
-    return avg_error/dataset.shape[0]
+    print("AVG_ERROR: ", avg_error / dataset.shape[0])
+    return avg_error / dataset.shape[0]
+
+
+'''
+epoch 19, best fitness = 0.1085864007
+[0.01097474 0.26553151 0.11786498 0.42229316 0.03308331 0.03509484
+ 0.85343658 0.11353733 0.08195224]
+ Validated on 20% of data - Accuracy 100%
+ with genetic_algorithm(fitness_func=ff, genotype_size=9, generation_size=30, generations=20, debug=True)
+'''
+
 
 def main():
     iris = datasets.load_iris()
-    normalized_iris = normalize_dataset(iris.data)
+    X = normalize_dataset(iris.data)
+    y = iris.target
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    n_features = normalized_iris.shape[1]
     print("START")
     myIT2FLS = TSK(product_t_norm, max_s_norm)
-   # fuzzy_sets = apply_fuzzy_sets([0.15, 0.15, 0.1, 0.5, 0.15, 0.1, 0.85, 0.15, 0.1])
-   # myIT2FLS = apply_rules_and_variables(myIT2FLS, fuzzy_sets[0], fuzzy_sets[1], fuzzy_sets[2])
-    ff = lambda x: evaluate_solution(myIT2FLS, x, normalized_iris, iris.target)
+    # fuzzy_sets = apply_fuzzy_sets([0.15, 0.15, 0.1, 0.5, 0.15, 0.1, 0.85, 0.15, 0.1])
+    # myIT2FLS = apply_rules_and_variables(myIT2FLS, fuzzy_sets[0], fuzzy_sets[1], fuzzy_sets[2])
+    ff = lambda x: evaluate_solution(myIT2FLS, x, X_train, y_train)
+    best, fbest = genetic_algorithm(fitness_func=ff, genotype_size=9, generation_size=20, generations=10, debug=True)
+
+    fs = apply_fuzzy_sets(best)
+    tsk = apply_rules_and_variables(myIT2FLS, fs[0], fs[1], fs[2])
+    correct = 0
+    for x in range(0, X_test.shape[0]):
+        result = myIT2FLS.evaluate(
+            {"x1": X_test[x][0], "x2": X_test[x][1], "x3": X_test[x][2],
+             "x4": X_test[x][3]})['y1']
+        print(result)
+        print(X_test[x][0], X_test[x][1], X_test[x][2], X_test[x][3],
+              y_test[x], round(result))
+        if round(result) == y_test[x]:
+            correct += 1
+    print("Accuracy: ", correct / y_test.shape[0])
 
 
-    best, fbest = genetic_algorithm(fitness_func=ff, dim=9, n_individuals=30, epochs=30, verbose=True)
-
-
-
-
+# for debugging
 def main1():
     iris = datasets.load_iris()
     normalized_iris = normalize_dataset(iris.data)
@@ -208,7 +229,7 @@ def main1():
     Short = IT2FS_Gaussian_UncertMean(domain, [0.1, 0.1, 0.1, 1.])
     Medium = IT2FS_Gaussian_UncertMean(domain, [0.97, 0.07, 0.84, 1.])
     Long = IT2FS_Gaussian_UncertMean(domain, [0.7, 0.1, 0.1, 1.])
-    IT2FS_plot(Short, Medium, Long, title="Sets",               legends=["Short", "Medium", "Long"])
+    IT2FS_plot(Short, Medium, Long, title="Sets", legends=["Short", "Medium", "Long"])
 
     n_features = normalized_iris.shape[1]
     print("START")
@@ -221,6 +242,7 @@ def main1():
         print(result)
         print(normalized_iris[x][0], normalized_iris[x][1], normalized_iris[x][2], normalized_iris[x][3],
               iris.target[x], round(result))
+
 
 if __name__ == "__main__":
     main()
